@@ -15,6 +15,20 @@ local function pairsByKeys(t, f)
     return iter
 end
 
+local function numerical_then_alphabetical_sort(a, b)
+    local num_a = tonumber(a)
+    local num_b = tonumber(b)
+    if num_a and num_b then
+        return num_a < num_b
+    elseif num_a and not num_b then
+        return true
+    elseif not num_a and num_b then
+        return false
+    else
+        return a < b
+    end
+end
+
 -- load xml data from file
 local xml = io.open(
     "/home/taylor/.local/share/Steam/steamapps/common/DefendersQuest/deluxe_gl/assets/gfx/_hd/defenders/mcguffin/h/atlas.xml",
@@ -78,7 +92,7 @@ local first_layer = new_sprite.layers[1]
 
 print(source_sprite.filename)
 
-for _, xml_sprite in pairsByKeys(xml_sprites) do
+for _, xml_sprite in pairsByKeys(xml_sprites, numerical_then_alphabetical_sort) do
     if true then
         local x = xml_sprite["x"]
         local y = xml_sprite["y"]
