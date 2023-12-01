@@ -99,5 +99,4 @@ for _, xml_sprite in pairsByKeys(xml_sprites) do
     end
 end
 
-new_sprite:delete_layer(first_layer)
-new_sprite.selection:deselect()
+new_sprite:deleteLayer(first_layer)
