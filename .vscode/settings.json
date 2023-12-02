@@ -3,6 +3,7 @@
         "app",
         "Rectangle",
         "Sprite",
-        "Point"
+        "Point",
+        "Dialog"
     ]
 }

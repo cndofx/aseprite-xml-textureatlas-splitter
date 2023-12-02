@@ -29,11 +29,19 @@ local function numerical_then_alphabetical_sort(a, b)
     end
 end
 
+-- prompt user for the xml file to use
+local dialog = Dialog("XML TextureAtlas Splitter")
+dialog:label { id = "desc", label = "", text = "Choose the location of the XML file:" }
+dialog:file { id = "file", label = "choose a file", open = true, entry = true }
+dialog:button { id = "ok", text = "OK", focus = true }
+dialog:button { text = "Cancel" }
+dialog:show()
+
+local ddata = dialog.data
+if not ddata.ok then return end
+
 -- load xml data from file
-local xml = io.open(
-    "/home/taylor/.local/share/Steam/steamapps/common/DefendersQuest/deluxe_gl/assets/gfx/_hd/defenders/mcguffin/h/atlas.xml",
-    "r"
-)
+local xml = io.open(ddata.file, "r")
 if not xml then
     return app.alert("Unable to read xml.")
 end
@@ -90,27 +98,34 @@ end
 local new_sprite = Sprite(bounds.width, bounds.height)
 local first_layer = new_sprite.layers[1]
 
-print(source_sprite.filename)
-
 for _, xml_sprite in pairsByKeys(xml_sprites, numerical_then_alphabetical_sort) do
-    if true then
-        local x = xml_sprite["x"]
-        local y = xml_sprite["y"]
-        local width = xml_sprite["width"]
-        local height = xml_sprite["height"]
-        source_sprite.selection:select(Rectangle(x, y, width, height))
+    local x = xml_sprite["x"]
+    local y = xml_sprite["y"]
+    local width = xml_sprite["width"]
+    local height = xml_sprite["height"]
+    source_sprite.selection:select(Rectangle(x, y, width, height))
 
-        app.sprite = source_sprite
-        app.command.CopyMerged()
-        app.sprite = new_sprite
+    app.sprite = source_sprite
+    app.command.CopyMerged()
+    app.sprite = new_sprite
+
+    print("copied sprite " .. xml_sprite["name"])
+    if true then
+        -- copy sprites to layers
         app.command.NewLayer { fromClipboard = true }
         app.activeLayer.name = xml_sprite["name"]
-
-        local cel = app.cel
-        cel.position = Point(
-            xml_sprite["frameX"] * -1,
-            xml_sprite["frameY"] * -1)
+    else
+        -- copy sprites to frames (unfinished)
+        app.cel = new_sprite:newCel(app.activeLayer, app.frame)
+        new_sprite:newEmptyFrame()
+        app.command.Paste()
+        print("pasted sprite onto frame " .. tostring(app.frame.frameNumber))
     end
+
+    local cel = app.cel
+    cel.position = Point(
+        xml_sprite["frameX"] * -1,
+        xml_sprite["frameY"] * -1)
 end
 
 new_sprite:deleteLayer(first_layer)
