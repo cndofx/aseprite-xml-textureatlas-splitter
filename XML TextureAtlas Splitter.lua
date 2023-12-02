@@ -49,7 +49,6 @@ end
 -- parse xml data
 local xml_sprites = {}
 for line in xml:lines() do
-    print("\n")
     for node in line:gmatch("<(%a+)%s* ") do
         if node == "SubTexture" then
             local name = line:match("name=\"([^\"]+)\"")
@@ -66,16 +65,6 @@ for line in xml:lines() do
             xml_sprites[name]["height"] = line:match("height=\"(%d+)\"")
             xml_sprites[name]["x"] = line:match("x=\"(%d+)\"")
             xml_sprites[name]["y"] = line:match("y=\"(%d+)\"")
-
-            print("name = " .. xml_sprites[name]["name"])
-            print("flipX = " .. xml_sprites[name]["flipX"])
-            print("flipY = " .. xml_sprites[name]["flipY"])
-            print("frameWidth = " .. xml_sprites[name]["frameWidth"])
-            print("frameHeight = " .. xml_sprites[name]["frameHeight"])
-            print("frameX = " .. xml_sprites[name]["frameX"])
-            print("frameY = " .. xml_sprites[name]["frameY"])
-            print("x = " .. xml_sprites[name]["x"])
-            print("y = " .. xml_sprites[name]["y"])
         end
     end
 end
@@ -86,7 +75,6 @@ for _, xml_sprite in pairs(xml_sprites) do
     local rect = Rectangle(0, 0, xml_sprite["frameWidth"], xml_sprite["frameHeight"])
     bounds = bounds:union(rect)
 end
-print(tostring(bounds))
 
 -- get currently active sprite
 local source_sprite = app.sprite
@@ -109,7 +97,6 @@ for _, xml_sprite in pairsByKeys(xml_sprites, numerical_then_alphabetical_sort) 
     app.command.CopyMerged()
     app.sprite = new_sprite
 
-    print("copied sprite " .. xml_sprite["name"])
     if true then
         -- copy sprites to layers
         app.command.NewLayer { fromClipboard = true }
