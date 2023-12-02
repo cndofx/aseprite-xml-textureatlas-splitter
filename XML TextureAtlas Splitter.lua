@@ -32,7 +32,8 @@ end
 -- prompt user for the xml file to use
 local dialog = Dialog("XML TextureAtlas Splitter")
 dialog:label { id = "desc", label = "", text = "Choose the location of the XML file:" }
-dialog:file { id = "file", label = "choose a file", open = true, entry = true }
+dialog:file { id = "file", label = "Choose a file:", open = true, entry = true }
+dialog:combobox { id = "target", label = "Copy to:", option = "Frames", options = { "Frames", "Layers" } }
 dialog:button { id = "ok", text = "OK", focus = true }
 dialog:button { text = "Cancel" }
 dialog:show()
@@ -82,9 +83,8 @@ if not source_sprite then
     return app.alert("You must have an image open!")
 end
 
--- create the new sprite and copy individual sprites into new layers
+-- create the new sprite and copy individual sprites into new layers/frames
 local new_sprite = Sprite(bounds.width, bounds.height)
-local first_layer = new_sprite.layers[1]
 
 for _, xml_sprite in pairsByKeys(xml_sprites, numerical_then_alphabetical_sort) do
     local x = xml_sprite["x"]
@@ -97,22 +97,28 @@ for _, xml_sprite in pairsByKeys(xml_sprites, numerical_then_alphabetical_sort) 
     app.command.CopyMerged()
     app.sprite = new_sprite
 
-    if true then
+    if ddata.target == "Layers" then
         -- copy sprites to layers
         app.command.NewLayer { fromClipboard = true }
         app.activeLayer.name = xml_sprite["name"]
-    else
-        -- copy sprites to frames (unfinished)
-        app.cel = new_sprite:newCel(app.activeLayer, app.frame)
+    elseif ddata.target == "Frames" then
+        -- copy sprites to frames
         new_sprite:newEmptyFrame()
+        app.cel = new_sprite:newCel(app.activeLayer, app.frame)
         app.command.Paste()
         print("pasted sprite onto frame " .. tostring(app.frame.frameNumber))
     end
 
+    local new_x = xml_sprite["frameX"] * -1
+    local new_y = xml_sprite["frameY"] * -1
     local cel = app.cel
-    cel.position = Point(
-        xml_sprite["frameX"] * -1,
-        xml_sprite["frameY"] * -1)
+    cel.position = Point(new_x, new_y)
+    print("moved name=" ..
+        xml_sprite["name"] .. " to position x: " .. tostring(new_x) .. ", y: " .. tostring(new_y))
 end
 
-new_sprite:deleteLayer(first_layer)
+if ddata.target == "Layers" then
+    new_sprite:deleteLayer(new_sprite.layers[1])
+elseif ddata.target == "Frames" then
+    new_sprite:deleteFrame(new_sprite.frames[1])
+end
